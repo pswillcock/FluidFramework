@@ -1,0 +1,47 @@
+# Copyright (c) Microsoft Corporation and contributors. All rights reserved.
+# Licensed under the MIT License.
+
+# publish-commit-azure-queue
+
+trigger: [ main ]
+
+jobs:
+  - job: merge-conflicts
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - script: |
+        git config user.email "syncbranchbot@microsoft.com"
+        git config user.name "Sync-Branch Bot"
+        echo ${{ github.event.pull_request.head.sha }}
+        git fetch origin branch_2
+        git checkout branch_2
+        git merge ${{ github.event.pull_request.head.sha }}
+
+  - job: add-comment
+    pool:
+      vmImage: 'ubuntu-latest'
+    dependsOn: merge-conflicts
+    condition: failed()
+    steps:
+    - script: |
+      // add comment
+
+  - job: queue-commit
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - ${{ if ne(github.event.label.name, 'do-not-merge-in-next') }}
+    - script: |
+        const connectionString = ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }};
+        const queueName = ${{ secrets.AZURE_QUEUE_NAME }}
+        const queueServiceClient = QueueServiceClient.fromConnectionString(connectionString);
+        const queueClient = queueServiceClient.getQueueClient(queueName);
+        const message = {
+          sha: ${{ github.event.pull_request.head.sha }},
+          url: ${{ github.event.url }}
+          assignee: ${{ github.author }},
+          label: queued, # and comment
+          run_id: ${{ github.run_id }}
+        };
+        await queueClient.sendMessage(JSON.stringify(message));
