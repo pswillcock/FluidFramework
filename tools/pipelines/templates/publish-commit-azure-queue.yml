@@ -6,28 +6,7 @@
 trigger: [ main ]
 
 jobs:
-  - job: merge-conflicts
-    pool:
-      vmImage: 'ubuntu-latest'
-    steps:
-    - script: |
-        git config user.email "syncbranchbot@microsoft.com"
-        git config user.name "Sync-Branch Bot"
-        echo ${{ github.event.pull_request.head.sha }}
-        git fetch origin branch_2
-        git checkout branch_2
-        git merge ${{ github.event.pull_request.head.sha }}
-
-  - job: add-comment
-    pool:
-      vmImage: 'ubuntu-latest'
-    dependsOn: merge-conflicts
-    condition: failed()
-    steps:
-    - script: |
-      // add comment
-
-  - job: queue-commit
+  - job: queue-commits
     pool:
       vmImage: 'ubuntu-latest'
     steps:
@@ -38,10 +17,18 @@ jobs:
         const queueServiceClient = QueueServiceClient.fromConnectionString(connectionString);
         const queueClient = queueServiceClient.getQueueClient(queueName);
         const message = {
-          sha: ${{ github.event.pull_request.head.sha }},
-          url: ${{ github.event.url }}
-          assignee: ${{ github.author }},
-          label: queued, # and comment
-          run_id: ${{ github.run_id }}
+          sha: '${{ github.event.pull_request.head.sha }}',
+          url: '${{ github.event.url }}'
+          assignee: '${{ github.author }}',
+          label: 'queued',
+          run_id: '${{ github.run_id }}'
         };
         await queueClient.sendMessage(JSON.stringify(message));
+        await github.rest.issues.createComment({
+          owner: context.repo.owner,
+          repo: context.repo.repo,
+          issue_number: context.payload.number,
+          body: "Commit queued for merging with next branch. Please ignore this comment it for now."
+        })
+
+# add a wiki link later on
