@@ -31,6 +31,8 @@ import { ICache } from "./definitions";
 const packageDetails = require("../../package.json");
 const userAgent = `Historian/${packageDetails.version}`;
 
+const latestSummarySha = "latest";
+
 export interface IDocument {
     existing: boolean;
     docPrivateKey: string;
@@ -238,6 +240,7 @@ export class RestGitService {
     }
 
     public async getSummary(sha: string, useCache: boolean): Promise<IWholeFlatSummary> {
+        console.log(`[DEBUG][Historian][getSummary] sha = ${sha}`);
         return this.resolve(
             // Currently, only "container" type summaries are retrieved from storage.
             // In the future, we might want to also retrieve "channels". When that happens,
@@ -246,8 +249,8 @@ export class RestGitService {
             this.getSummaryCacheKey("container"),
             async () => this.get<IWholeFlatSummary>(
                 `/repos/${this.getRepoPath()}/git/summaries/${encodeURIComponent(sha)}`),
-            useCache,
-            true);
+            sha === latestSummarySha ? useCache : false,
+            sha === latestSummarySha);
     }
 
     public async updateRef(ref: string, params: IPatchRefParamsExternal): Promise<git.IRef> {
@@ -463,8 +466,9 @@ export class RestGitService {
     private async resolve<T>(key: string,
                              fetch: () => Promise<T>,
                              useCache: boolean,
-                             resolvingSummary: boolean = false): Promise<T> {
+                             resolvingLatestSummary: boolean = false): Promise<T> {
         if (this.cache && useCache) {
+            console.log(`[DEBUG][resolve] Trying to resolve from cache, key: ${key}`);
             // Attempt to grab the value from the cache. Log any errors but don't fail the request
             const cachedValue: T | undefined = await this.cache.get<T>(key).catch((error) => {
                 winston.error(`Error fetching ${key} from cache`, error);
@@ -482,14 +486,20 @@ export class RestGitService {
             return this.fetchAndCache(key, fetch);
         }
 
-        if (resolvingSummary) {
+        if (resolvingLatestSummary) {
+            console.log(`[DEBUG][resolve] ResolvingLatestSummary, no cache, key: ${key}`);
             /**
-             * We set the useCache flag as false when we fetch the summary at the first time. We need to
-             * get the summary from the storage, and update the cache. If not, the following calls with
-             * useCache enabled might read the outdated summary from cache in case of the cluster change.
+             * We set the useCache flag (used above) as false when we fetch the initial latest summary for a document.
+             * In that scenario, we need to get the summary from storage and bypass the cache, since the cached
+             * data might be obsolete due to a cluster change. We also want to add the summary fetched from storage
+             * to the cache, so it can be reused by subsequent requests - which would not disable useCache by default.
+             * For summaries other than the latest (only requested by the summarizer client), we don't need caching,
+             * so resolvingLatestSummary would be false in those cases.
              */
              return this.fetchAndCache(key, fetch);
         }
+
+        console.log(`[DEBUG][resolve] No cache, no latest summary, just fetch. key: ${key}`);
         return fetch();
     }
 

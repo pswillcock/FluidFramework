@@ -45,6 +45,7 @@ async function getSummary(
     externalWriterConfig?: IExternalWriterConfig,
     persistLatestFullSummary = false,
 ): Promise<IWholeFlatSummary> {
+    console.log(`[DEBUG][GitRest][getSummary] sha = ${sha}`);
     const lumberjackProperties = {
         ...getLumberjackBasePropertiesFromRepoManagerParams(repoManagerParams),
         [BaseGitRestTelemetryProperties.sha]: sha,
