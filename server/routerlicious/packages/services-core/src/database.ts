@@ -148,6 +148,19 @@ export interface IDb {
     on(event: IDbEvents, listener: (...args: any[]) => void);
 
     collection<T>(name: string): ICollection<T>;
+
+    /**
+     * Creates a new collection.
+     * Unlike the implicity collection creation by using `collection` api that on first reference,
+     * this method is usaged primary for creating new collections that use specfic options.
+     */
+    createCollection<T>(name: string, option: any): ICollection<T>;
+
+    /**
+     * Removes a collection or view from the database.
+     * The method also removes any indexes associated with the dropped collection.
+     */
+    drop(name: string, options?: any): Promise<boolean>;
 }
 
 export interface IDbFactory {

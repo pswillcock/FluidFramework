@@ -5,7 +5,14 @@
 
 import { assert } from "console";
 import * as core from "@fluidframework/server-services-core";
-import { AggregationCursor, Collection, MongoClient, MongoClientOptions } from "mongodb";
+import {
+    AggregationCursor,
+    CreateCollectionOptions,
+    Collection,
+    DropCollectionOptions,
+    MongoClient,
+    MongoClientOptions,
+} from "mongodb";
 import { Lumberjack } from "@fluidframework/server-services-telemetry";
 
 const MaxFetchSize = 2000;
@@ -155,6 +162,15 @@ export class MongoDb implements core.IDb {
     public collection<T>(name: string): core.ICollection<T> {
         const collection = this.client.db("admin").collection<T>(name);
         return new MongoCollection<T>(collection);
+    }
+
+    public async createCollection<T>(name: string, option?: CreateCollectionOptions): Promise<core.ICollection<T>> {
+        const collection = await this.client.db("admin").createCollection<T>(name, option);
+        return new MongoCollection<T>(collection);
+    }
+
+    public async drop(name: string, option?: DropCollectionOptions): Promise<boolean> {
+        return this.client.db("admin").dropCollection(name, option);
     }
 }
 
