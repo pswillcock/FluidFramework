@@ -154,7 +154,7 @@ export interface IDb {
      * Unlike the implicity collection creation by using `collection` api that on first reference,
      * this method is usaged primary for creating new collections that use specfic options.
      */
-    createCollection<T>(name: string, option: any): ICollection<T>;
+    createCollection<T>(name: string, option: any): Promise<ICollection<T>>;
 
     /**
      * Removes a collection or view from the database.

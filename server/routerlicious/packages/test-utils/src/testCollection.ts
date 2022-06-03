@@ -205,6 +205,20 @@ export class TestDb implements IDb {
         const collection = this.collections[name];
         return new TestCollection(collection);
     }
+
+    public async createCollection<T>(name: string, option: any): Promise<ICollection<T>> {
+        return this.collection(name);
+    }
+
+    public async drop(name: string, options?: any): Promise<boolean> {
+        if (!Object.prototype.hasOwnProperty.call(this.collections, name)) {
+            return true;
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+        delete this.collections[name];
+        return true;
+    }
 }
 
 export interface ITestDbFactory extends IDbFactory {
