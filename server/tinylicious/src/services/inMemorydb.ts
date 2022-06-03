@@ -23,11 +23,7 @@ export class InMemoryDb extends EventEmitter implements IDb {
         return this.collections.get(name);
     }
 
-    public async createCollection<T>(name: string, option: any): Promise<ICollection<T>> {
-        return this.collection(name);
-    }
-
-    public async drop(name: string, options?: any): Promise<boolean> {
+    public async dropCollection(name: string): Promise<boolean> {
         if (!this.collections.has(name)) {
             return true;
         }

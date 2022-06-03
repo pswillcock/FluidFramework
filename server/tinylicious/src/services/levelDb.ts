@@ -31,11 +31,7 @@ export class LevelDb extends EventEmitter implements IDb {
         return new Collection(collectionDb, this.getProperty(name));
     }
 
-    public async createCollection<T>(name: string, option: any): Promise<ICollection<T>> {
-        return this.collection(name);
-    }
-
-    public async drop(name: string, options?: any): Promise<boolean> {
+    public async dropCollection(name: string): Promise<boolean> {
         throw new Error("Method Not Implemented");
     }
 

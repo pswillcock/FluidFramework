@@ -7,9 +7,7 @@ import { assert } from "console";
 import * as core from "@fluidframework/server-services-core";
 import {
     AggregationCursor,
-    CreateCollectionOptions,
     Collection,
-    DropCollectionOptions,
     MongoClient,
     MongoClientOptions,
 } from "mongodb";
@@ -164,13 +162,8 @@ export class MongoDb implements core.IDb {
         return new MongoCollection<T>(collection);
     }
 
-    public async createCollection<T>(name: string, option?: CreateCollectionOptions): Promise<core.ICollection<T>> {
-        const collection = await this.client.db("admin").createCollection<T>(name, option);
-        return new MongoCollection<T>(collection);
-    }
-
-    public async drop(name: string, option?: DropCollectionOptions): Promise<boolean> {
-        return this.client.db("admin").dropCollection(name, option);
+    public async dropCollection(name: string): Promise<boolean> {
+        return this.client.db("admin").dropCollection(name);
     }
 }
 

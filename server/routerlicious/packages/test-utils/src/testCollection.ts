@@ -206,11 +206,7 @@ export class TestDb implements IDb {
         return new TestCollection(collection);
     }
 
-    public async createCollection<T>(name: string, option: any): Promise<ICollection<T>> {
-        return this.collection(name);
-    }
-
-    public async drop(name: string, options?: any): Promise<boolean> {
+    public async dropCollection(name: string): Promise<boolean> {
         if (!Object.prototype.hasOwnProperty.call(this.collections, name)) {
             return true;
         }
