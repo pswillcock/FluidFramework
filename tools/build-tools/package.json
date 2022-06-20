@@ -25,6 +25,7 @@
   "scripts": {
     "build": "tsc -b && npm run build:test",
     "build:test": "tsc --project ./src/test/tsconfig.json",
+    "bump": "node dist/bumpVersion/bumpVersionCli.js --root ../..",
     "debug:layer-check": "node --inspect-brk dist/layerCheck/layerCheck.js --root ../..",
     "layer-check": "node dist/layerCheck/layerCheck.js --root ../..",
     "layer-check:doc": "node dist/layerCheck/layerCheck.js --root ../.. --md",
