@@ -28,14 +28,23 @@ export class FluidRepo {
 
     public readonly packages: Packages;
 
+    /**
+     * @deprecated Use monoRepos.get() instead.
+     */
     public get clientMonoRepo(): MonoRepo {
         return this.monoRepos.get(MonoRepoKind.Client)!;
     }
 
+    /**
+     * @deprecated Use monoRepos.get() instead.
+     */
     public get serverMonoRepo(): MonoRepo | undefined {
         return this.monoRepos.get(MonoRepoKind.Server);
     }
 
+    /**
+     * @deprecated Use monoRepos.get() instead.
+     */
     public get azureMonoRepo(): MonoRepo | undefined {
         return this.monoRepos.get(MonoRepoKind.Azure)!;
     }
